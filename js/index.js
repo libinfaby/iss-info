@@ -117,7 +117,7 @@ function getCountryData(lat, lon) {
     fetch(url, { headers: { 'Accept-Language': 'en' } })
         .then(r => r.json())
         .then(data => {
-            const loc = data.address?.country || 'Over Ocean';
+            const loc = data.address?.country || 'Ocean';
             lastKnownLocation = loc;
             flashValue('above');
             document.getElementById('above').textContent = loc;
@@ -170,5 +170,6 @@ async function getISSOnboard() {
         console.error('Crew fetch error:', e);
     }
 }
+
 
 getISSOnboard();
