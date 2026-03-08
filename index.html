@@ -4,102 +4,143 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        <title>International Space Station &middot; Info</title>
+        <title>Live International Space Station Monitor</title>
         <link rel="icon" type="image/x-icon" href="./img/ISS_emblem.png">
 
-        <link rel="stylesheet" href="./css/style.css">
-
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-        crossorigin=""/>
-
+            integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+            crossorigin=""/>
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
             integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-            crossorigin="">
-        </script>
+            crossorigin=""></script>
+        <script src="https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
 
-        <script src=" https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-        <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Montserrat:300" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css?family=Chivo:300,700|Playfair+Display:700i" rel="stylesheet">
-
+        <link rel="stylesheet" href="./css/style.css">
     </head>
-
     <body>
-        <header id="header">
-            <div>
-                <h1 class="logo">ISS &middot; INFO</h1>
-                <p class="logo-info">INFORMATION ABOUT THE <b>INTERNATIONAL SPACE STATION</b></p>
+
+        <div id="starfield"></div>
+
+        <header>
+            <div class="logo-wrap">
+                <div class="logo-dot"></div>
+                <div class="logo-text">ISS<span>·</span>INFO</div>
             </div>
-            <div class="menu">
-                <a href="#section-map">LIVE LOCATION</a>
-                <a href="#section-onboard">WHO'S ONBOARD?</a>   
-                <a href="#section-about">ABOUT ISS</a>    
-                <a href="#footer">CREDITS</a>  
-            </div>
+            <nav>
+                <a href="#section-map">Live Location</a>
+                <a href="#section-onboard">Crew</a>
+                <a href="#section-about">About</a>
+                <a href="#footer">Credits</a>
+            </nav>
         </header>
 
-        <section id="section-map">
-            <h1>LIVE LOCATION</h1>
-            <div id="map"></div>
-            <button id="center-map">Click here to center the map</button>
+        <section class="hero">
+            <p class="hero-label">Real-time orbital monitoring</p>
+            <h1>International<br>Space Station<br><em>Live Tracker</em></h1>
+            <p class="hero-sub">Live telemetry, crew manifest, and orbital position data for the International Space Station - updated every second.</p>
         </section>
 
         <section id="section-details">
-            <!-- <h1>DETAILS</h1> -->
-            <div><p>Above : <span id="above"></span></p></div>
-            <div><p>Latitude : <span id="latitude"></span></p></div>
-            <div><p>Longitude : <span id="longitude"></span></p></div>
-            <div><p>Altitude : <span id="altitude"></span></p></div>
-            <div><p>Velocity : <span id="velocity"></span></p></div>
-            <div><p>Visibility : <span id="visibility"></span></p></div>
-            <div><p>Orbits : 16 orbits/day</p></div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Above</div>
+                <div class="telemetry-value" id="above">-</div>
+                <div class="telemetry-unit">Location</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Latitude</div>
+                <div class="telemetry-value" id="latitude">-</div>
+                <div class="telemetry-unit">Degrees</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Longitude</div>
+                <div class="telemetry-value" id="longitude">-</div>
+                <div class="telemetry-unit">Degrees</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Altitude</div>
+                <div class="telemetry-value" id="altitude">-</div>
+                <div class="telemetry-unit">km</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Velocity</div>
+                <div class="telemetry-value" id="velocity">-</div>
+                <div class="telemetry-unit">km/h</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Visibility</div>
+                <div class="telemetry-value" id="visibility">-</div>
+                <div class="telemetry-unit">Condition</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Orbit Rate</div>
+                <div class="telemetry-value">16</div>
+                <div class="telemetry-unit">Orbits / Day</div>
+            </div>
+        </section>
+
+        <section id="section-map">
+            <div class="section-header">
+                <span class="section-title">Live Orbital Position</span>
+                <span class="live-badge"><span class="live-dot"></span>Live</span>
+            </div>
+            <div id="map"></div>
+            <button id="center-map">⊕ Re-center map to ISS</button>
         </section>
 
         <section id="section-onboard">
-            <h1>WHO'S ONBOARD ISS?</h1>
-            <div>
-                <h3>Number of astronauts onboard : <span id="onboard-number"></span></h3>
+            <div class="section-header">
+                <span class="section-title">Current Crew Manifest</span>
             </div>
-            <div class="onboard-people">
-                <div id="onboard-people"></div>
+            <div class="crew-count">Personnel aboard: <span id="onboard-number">-</span></div>
+            <div class="crew-grid" id="onboard-people">
+                <div class="loading-state">Fetching crew manifest...</div>
             </div>
         </section>
 
         <section id="section-about">
-            <h1>ABOUT ISS</h1>
-            <div>
-                <p>The International Space Station is a large spacecraft in orbit around Earth. It serves as a home where crews of astronauts and cosmonauts live. 
-                    The space station is also a unique science laboratory. Several nations worked together to build and use the space station. 
-                    The space station is made of parts that were assembled in space by astronauts. It orbits Earth at an average altitude of approximately 250 miles. 
-                    It travels at 17,500 mph. This means it orbits Earth every 90 minutes. NASA is using the space station to learn more about living and working in space.</p>
-                    <p>The space station has made it possible for people to have an ongoing presence in space. Human beings have been living in space every day since the first crew arrived. 
-                    The space station's laboratories allow crew members to do research that could not be done anywhere else. This scientific research benefits people on Earth. 
-                    Space research is even used in everyday life. Scientists also study what happens to the body when people live in microgravity for a long time. 
-                    NASA and its partners have learned how to keep a spacecraft working well. All of these lessons will be important for future space exploration.
-                    <a href="https://www.nasa.gov/audience/forstudents/5-8/features/nasa-knows/what-is-the-iss-58.html" target="_blank" rel="noreferrer"> Read more about ISS here.</a>
-                </p>
+            <div class="about-label">
+                <div class="section-title">About the ISS</div>
+            </div>
+            <div class="about-text">
+                <p>The International Space Station is a modular space station in low Earth orbit - the largest crewed object ever assembled in space. Orbiting at approximately 408 km altitude, it completes a full revolution of Earth every 90 minutes at 28,000 km/h.</p>
+                <p>A collaborative project between NASA, Roscosmos, ESA, JAXA, and CSA, the ISS has maintained a continuous human presence since November 2000. Its pressurized modules host cutting-edge research in biology, physics, astronomy, and meteorology - experiments only possible in the microgravity environment of orbit. <a href="https://www.nasa.gov/audience/forstudents/5-8/features/nasa-knows/what-is-the-iss-58.html" target="_blank" rel="noreferrer">Read more at NASA →</a></p>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-num">408km</div>
+                        <div class="stat-desc">Orbital altitude</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">90min</div>
+                        <div class="stat-desc">Orbital period</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">25yrs</div>
+                        <div class="stat-desc">In operation</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num">420t</div>
+                        <div class="stat-desc">Total mass</div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <footer id="footer">
-            <p>Credits</p>
-            <a class="footer-a" href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet.js</a>
-            <a class="footer-a" href="https://www.openstreetmap.org/about" target="_blank" rel="noreferrer">OpenStreetMap</a>
-            <a class="footer-a" href="https://www.jawg.io/" target="_blank" rel="noreferrer">JawgMaps</a>
-            <a class="footer-a" href="https://joergdietrich.github.io/Leaflet.Terminator/" target="_blank" rel="noreferrer">Leaflet.Terminator</a>
-            <a class="footer-a" href="https://wheretheiss.at/" target="_blank" rel="noreferrer">WhereTheIss.at</a>
-            <a class="footer-a" href="http://open-notify.org/" target="_blank" rel="noreferrer">Open-Notify</a>
-            <a class="footer-a" href="https://opencagedata.com/" target="_blank" rel="noreferrer">OpenCage</a>
-            <a class="footer-a" href="https://www.mediawiki.org/wiki/API:Main_page" target="_blank" rel="noreferrer">MediaWiki</a>
-            <div class="github">
-                <div>
-                    <p>&copy; 2022 &nbsp; &middot;<a href="https://github.com/libinfaby" target="_blank" rel="noreferrer">Libin Faby</a></p> 
-                    <img src="./img/github-icon.svg" alt="">
-                </div>
+            <div class="footer-credits">
+                <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet.js</a>
+                <a href="https://www.openstreetmap.org/about" target="_blank" rel="noreferrer">OpenStreetMap</a>
+                <a href="https://www.jawg.io/" target="_blank" rel="noreferrer">JawgMaps</a>
+                <a href="https://wheretheiss.at/" target="_blank" rel="noreferrer">WhereTheIss.at</a>
+                <a href="http://open-notify.org/" target="_blank" rel="noreferrer">Open-Notify</a>
+                <a href="https://opencagedata.com/" target="_blank" rel="noreferrer">OpenCage</a>
+                <a href="https://www.mediawiki.org/wiki/API:Main_page" target="_blank" rel="noreferrer">MediaWiki</a>
             </div>
-
+            <div class="footer-copy">
+                &copy; 2022 &nbsp;<a href="https://github.com/libinfaby" target="_blank" rel="noreferrer">Libin Faby</a>
+            </div>
         </footer>
 
         <script src="./js/index.js"></script>
