@@ -24,16 +24,28 @@ terminator.addTo(map);
 setInterval(() => terminator.setTime(), 10000);
 
 const issIcon = L.divIcon({
-    html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="4" fill="#00d4ff" opacity="0.9"/>
-        <circle cx="12" cy="12" r="8" stroke="#00d4ff" stroke-width="1" opacity="0.4"/>
-        <line x1="0" y1="12" x2="24" y2="12" stroke="#00d4ff" stroke-width="1.5" opacity="0.7"/>
-        <line x1="12" y1="0" x2="12" y2="24" stroke="#00d4ff" stroke-width="1.5" opacity="0.7"/>
-    </svg>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    html: `<div style="
+        width: 12px;
+        height: 12px;
+        background: #00d4ff;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #00d4ff, 0 0 16px rgba(0,212,255,0.5);
+    "></div>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
     className: ''
 });
+// const issIcon = L.divIcon({
+//     html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+//         <circle cx="12" cy="12" r="4" fill="#00d4ff" opacity="0.9"/>
+//         <circle cx="12" cy="12" r="8" stroke="#00d4ff" stroke-width="1" opacity="0.4"/>
+//         <line x1="0" y1="12" x2="24" y2="12" stroke="#00d4ff" stroke-width="1.5" opacity="0.7"/>
+//         <line x1="12" y1="0" x2="12" y2="24" stroke="#00d4ff" stroke-width="1.5" opacity="0.7"/>
+//     </svg>`,
+//     iconSize: [24, 24],
+//     iconAnchor: [12, 12],
+//     className: ''
+// });
 const marker = L.marker([0, 0], { icon: issIcon }).addTo(map);
 
 let firstTime = true;
@@ -52,7 +64,6 @@ async function getISSData() {
         const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
         const data = await res.json();
 
-        // Guard against bad API responses
         if (data.latitude == null || data.longitude == null) {
             console.warn('ISS API bad response:', data);
             return;
@@ -73,7 +84,10 @@ async function getISSData() {
         document.getElementById('velocity').textContent = velocity.toFixed(0);
         document.getElementById('visibility').textContent = visibility;
 
+        // LOG THIS — tells you exactly what coords are going to geocoder
+        console.log('Sending to geocoder:', latitude.toFixed(4), longitude.toFixed(4));
         getCountryData(latitude, longitude);
+
     } catch(e) {
         console.warn('ISS location fetch failed, retrying...', e);
     }
@@ -90,18 +104,21 @@ document.getElementById('center-map').addEventListener('click', () => {
 // --- REVERSE GEOCODING ---
 // Throttled — only call every 5 seconds, not every 1s (saves API quota)
 let lastGeocode = 0;
+let lastKnownLocation = 'Calculating...';
+
 function getCountryData(lat, lon) {
     const now = Date.now();
-    if (now - lastGeocode < 5000) return;
+    document.getElementById('above').textContent = lastKnownLocation;
+    if (now - lastGeocode < 30000) return;
     lastGeocode = now;
 
-    const api_key = 'd1016dcd31d240f1bd9bbd31009e8b14';
-    const url = `https://api.opencagedata.com/geocode/v1/json?key=${api_key}&q=${encodeURIComponent(lat+','+lon)}&pretty=1&no_annotations=1`;
-    fetch(url)
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&format=json`;
+
+    fetch(url, { headers: { 'Accept-Language': 'en' } })
         .then(r => r.json())
         .then(data => {
-            let loc = 'Over Ocean';
-            if (data.results?.[0]?.components?.country) loc = data.results[0].components.country;
+            const loc = data.address?.country || 'Over Ocean';
+            lastKnownLocation = loc;
             flashValue('above');
             document.getElementById('above').textContent = loc;
         })

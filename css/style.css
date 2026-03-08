@@ -446,3 +446,29 @@ footer {
     .stats-row { gap: 1.5rem; }
     #map { height: 300px; }
 }
+
+@media (max-width: 600px) {
+    #section-about {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 2rem 1.5rem;
+    }
+
+    .about-label {
+        padding-top: 0;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .stat-num {
+        font-size: 1.3rem;
+    }
+
+    .about-text p {
+        font-size: 0.75rem;
+    }
+}
