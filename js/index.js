@@ -158,7 +158,7 @@ async function getISSOnboard() {
                 </div>
                 <div class="crew-craft">
                     ${person.spacecraft || 'ISS'} · ${person.agency || ''}
-                    ${isISS ? '' : '<span style="margin-left:8px;font-size:0.55rem;color:#ff9944;border:1px solid #ff994466;padding:1px 6px;border-radius:10px;">Tiangong</span>'}
+                    ${isISS ? '<span style="margin-left:8px;font-size:0.55rem;color:#ff44aa;border:1px solid #ff994466;padding:1px 6px;border-radius:10px;">ISS</span>' : '<span style="margin-left:8px;font-size:0.55rem;color:#ff9944;border:1px solid #ff994466;padding:1px 6px;border-radius:10px;">Tiangong</span>'}
                 </div>
                 <div class="crew-bio">${person.position || ''}</div>
                 <a class="crew-link" href="${person.url || '#'}" target="_blank" rel="noreferrer">Wikipedia →</a>
