@@ -2,7 +2,7 @@
 
 **Real-time tracking of the International Space Station - live position, telemetry, and crew manifest.**
 
-🔗 **[Live Site → libinfaby.github.io/iss-info](https://libinfaby.github.io/iss-info/)**
+🔗 **[Live Site → libinfaby.dev/iss-info](https://libinfaby.dev/iss-info/)**
 
 ---
 
