@@ -75,7 +75,7 @@ header {
 .logo-text {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     letter-spacing: 0.15em;
     color: var(--text);
 }
@@ -83,7 +83,7 @@ header {
 
 nav { display: flex; gap: 2rem; align-items: center; }
 nav a {
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     letter-spacing: 0.12em;
     color: var(--muted);
     text-decoration: none;
@@ -100,7 +100,7 @@ nav a:hover { color: var(--accent); }
     border-bottom: 1px solid var(--border);
 }
 .hero-label {
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     letter-spacing: 0.2em;
     color: var(--accent);
     text-transform: uppercase;
@@ -109,7 +109,7 @@ nav a:hover { color: var(--accent); }
 .hero h1 {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-size: clamp(2.0rem, 5vw, 4.0rem);
     line-height: 1.05;
     color: var(--text);
     max-width: 700px;
@@ -120,7 +120,7 @@ nav a:hover { color: var(--accent); }
 }
 .hero-sub {
     margin-top: 1.2rem;
-    font-size: 0.8rem;
+    font-size: 1.0rem;
     line-height: 1.8;
     color: var(--muted);
     max-width: 500px;
@@ -154,7 +154,7 @@ nav a:hover { color: var(--accent); }
 .telemetry-cell:hover::before { opacity: 1; }
 
 .telemetry-label {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--muted);
@@ -162,14 +162,14 @@ nav a:hover { color: var(--accent); }
 }
 .telemetry-value {
     font-family: 'Syne', sans-serif;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--text);
     transition: color 0.3s;
 }
 .telemetry-value.updating { color: var(--accent); }
 .telemetry-unit {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--muted);
     margin-top: 0.2rem;
 }
@@ -189,7 +189,7 @@ nav a:hover { color: var(--accent); }
 }
 .section-title {
     font-family: 'Syne', sans-serif;
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.25em;
     text-transform: uppercase;
@@ -199,7 +199,7 @@ nav a:hover { color: var(--accent); }
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     letter-spacing: 0.1em;
     color: var(--accent2);
     background: rgba(255, 107, 53, 0.1);
@@ -228,7 +228,7 @@ nav a:hover { color: var(--accent); }
     border: 1px solid var(--border);
     color: var(--muted);
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 8px 18px;
@@ -251,14 +251,14 @@ nav a:hover { color: var(--accent); }
 
 .crew-count {
     font-family: 'Syne', sans-serif;
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--muted);
     margin-bottom: 2rem;
 }
 .crew-count span {
     color: var(--accent);
-    font-size: 1.1rem;
+    font-size: 1.3rem;
 }
 
 .crew-grid {
@@ -290,33 +290,33 @@ nav a:hover { color: var(--accent); }
 .crew-card:hover::after { transform: scaleY(1); }
 
 .crew-index {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     letter-spacing: 0.15em;
     color: var(--muted);
     margin-bottom: 0.6rem;
 }
 .crew-name {
     font-family: 'Syne', sans-serif;
-    font-size: 1rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--text);
     margin-bottom: 0.5rem;
 }
 .crew-craft {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     letter-spacing: 0.1em;
     color: var(--accent);
     text-transform: uppercase;
     margin-bottom: 0.8rem;
 }
 .crew-bio {
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     line-height: 1.7;
     color: var(--muted);
     margin-bottom: 1rem;
 }
 .crew-link {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--accent);
@@ -329,7 +329,7 @@ nav a:hover { color: var(--accent); }
 
 .loading-state {
     padding: 2rem;
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     color: var(--muted);
     letter-spacing: 0.1em;
 }
@@ -349,7 +349,7 @@ nav a:hover { color: var(--accent); }
 .about-label { padding-top: 4px; }
 
 .about-text p {
-    font-size: 0.8rem;
+    font-size: 1.0rem;
     line-height: 2;
     color: var(--muted);
     margin-bottom: 1.2rem;
@@ -377,7 +377,7 @@ nav a:hover { color: var(--accent); }
     color: var(--accent);
 }
 .stat-desc {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     letter-spacing: 0.1em;
     color: var(--muted);
     text-transform: uppercase;
@@ -403,7 +403,7 @@ footer {
     align-items: center;
 }
 .footer-credits a {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--muted);
@@ -413,7 +413,7 @@ footer {
 .footer-credits a:hover { color: var(--accent); }
 
 .footer-copy {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--muted);
     letter-spacing: 0.08em;
 }
@@ -427,7 +427,7 @@ footer {
 .leaflet-control-attribution {
     background: rgba(5, 13, 20, 0.8) !important;
     color: var(--muted) !important;
-    font-size: 9px !important;
+    font-size: 11px !important;
 }
 .leaflet-control-attribution a { color: var(--accent) !important; }
 .leaflet-control-zoom a {
@@ -465,10 +465,10 @@ footer {
     }
 
     .stat-num {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
     }
 
     .about-text p {
-        font-size: 0.75rem;
+        font-size: 0.95rem;
     }
 }
