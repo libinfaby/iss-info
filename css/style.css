@@ -52,9 +52,7 @@ button { font: inherit; cursor: pointer; }
 .wrap {
     position: relative;
     z-index: 1;
-    max-width: 1240px;
-    margin: 0 auto;
-    padding: 20px 24px 0;
+    padding: 20px clamp(16px, 4vw, 72px) 0;
 }
 
 /* STARFIELD */
@@ -389,9 +387,9 @@ h2.gap-small { margin-bottom: 20px; }
     padding: 12px;
     box-shadow: 8px 8px 0 var(--blue);
 }
+/* Height follows the page width, but never taller than the screen or shorter than a phone needs */
 #map {
-    aspect-ratio: 2 / 1;
-    min-height: 320px;
+    height: clamp(340px, 46vw, 72vh);
     border-radius: 18px;
     overflow: hidden;
     z-index: 0;
@@ -444,7 +442,7 @@ h2.gap-small { margin-bottom: 20px; }
     border-radius: 0;
     box-shadow: none;
 }
-.map-card:fullscreen #map { flex: 1; aspect-ratio: auto; }
+.map-card:fullscreen #map { flex: 1; height: auto; }
 
 /* Map markers */
 .iss-marker { position: relative; }
@@ -1003,7 +1001,7 @@ footer {
 }
 
 @media (max-width: 600px) {
-    .wrap { padding: 16px 16px 0; }
+    .wrap { padding-top: 16px; }
     .hero { padding: 24px 0 40px; }
     .hero-sub { font-size: 18px; }
     .hero-planet { right: -10px; top: -56px; width: 88px; height: 88px; }
