@@ -4,7 +4,7 @@ const IssMap = (() => {
 
     const jawgUrl = 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=SzrSvA5Rb0Pewv0YPkhpOftwqAJZTFJApRlriSuJRXroUWg0uD3nhJxtNvc1ahWF';
     const jawgAttribution = '<a href="https://www.jawg.io" target="_blank">&copy; Jawg</a> &mdash; <a href="https://www.openstreetmap.org" target="_blank">&copy; OpenStreetMap</a>';
-    const darkLayer = L.tileLayer(jawgUrl, { attribution: jawgAttribution, minZoom: 2, maxZoom: 22 }).addTo(map);
+    const darkLayer = L.tileLayer(jawgUrl, { attribution: jawgAttribution, minZoom: 2, maxZoom: 22, className: 'tint-tiles' }).addTo(map);
     const satelliteLayer = L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         { attribution: 'Imagery &copy; <a href="https://www.esri.com" target="_blank">Esri</a>', minZoom: 2, maxZoom: 18 }
@@ -14,29 +14,39 @@ const IssMap = (() => {
     terminator.addTo(map);
     setInterval(() => terminator.setTime(), 10000);
 
-    function dotIcon(size, style) {
+    const YELLOW = 'oklch(0.86 0.14 90)';
+    const GREEN = 'oklch(0.82 0.14 165)';
+    const BLUE = 'oklch(0.82 0.14 235)';
+    const PAST = 'oklch(0.6 0.08 285)';
+
+    function dotIcon(size, kind) {
         return L.divIcon({
-            html: `<div style="width:${size}px; height:${size}px; border-radius:50%; ${style}"></div>`,
+            html: `<div class="map-dot ${kind}"></div>`,
             iconSize: [size, size],
             iconAnchor: [size / 2, size / 2],
             className: ''
         });
     }
-    const issIcon = dotIcon(12, 'background:#00d4ff; box-shadow:0 0 8px #00d4ff, 0 0 16px rgba(0,212,255,0.5);');
-    const ghostIcon = dotIcon(14, 'border:2px solid #00d4ff; background:rgba(0,212,255,0.15);');
-    const sunIcon = dotIcon(14, 'background:#ffd166; box-shadow:0 0 10px #ffd166, 0 0 24px rgba(255,209,102,0.6);');
-    const observerIcon = dotIcon(10, 'border:2px solid #e8f4f8; background:#050d14;');
-    const tiangongIcon = dotIcon(10, 'background:#c084fc; box-shadow:0 0 8px #c084fc;');
+    const issIcon = L.divIcon({
+        html: '<div class="iss-pulse"></div><div class="iss-dot">ISS</div><div class="iss-bubble"></div>',
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+        className: 'iss-marker'
+    });
+    const ghostIcon = dotIcon(24, 'ghost');
+    const sunIcon = dotIcon(22, 'sun');
+    const observerIcon = dotIcon(16, 'observer');
+    const tiangongIcon = dotIcon(18, 'tiangong');
 
     const trackLayer = L.layerGroup().addTo(map);
     const footprint = L.polygon([], {
-        color: '#00d4ff', weight: 1, opacity: 0.6, fillColor: '#00d4ff', fillOpacity: 0.06, interactive: false
+        color: GREEN, weight: 2, opacity: 1, fillColor: GREEN, fillOpacity: 0.12, interactive: false
     }).addTo(map);
     const sunMarker = L.marker([0, 0], { icon: sunIcon, interactive: false, keyboard: false }).addTo(map);
     const tiangongLayer = L.layerGroup();
     const tiangongTrack = L.layerGroup().addTo(tiangongLayer);
     const tiangongMarker = L.marker([0, 0], { icon: tiangongIcon }).bindTooltip('Tiangong').addTo(tiangongLayer);
-    const marker = L.marker([0, 0], { icon: issIcon, zIndexOffset: 1000 }).bindTooltip('ISS').addTo(map);
+    const marker = L.marker([0, 0], { icon: issIcon, zIndexOffset: 1000 }).addTo(map);
     const ghostMarker = L.marker([0, 0], { icon: ghostIcon, interactive: false, keyboard: false });
     let observerMarker = null;
 
@@ -53,9 +63,6 @@ const IssMap = (() => {
     ).addTo(map);
 
     // --- GROUND TRACK ---
-    const SUNLIT_COLOR = '#ff6b35';
-    const SHADOW_COLOR = '#4a7fb5';
-
     // Split a run of points into lines that never jump across the map's left and right edges
     function splitAtEdges(points) {
         const lines = [[]];
@@ -73,30 +80,18 @@ const IssMap = (() => {
         return lines;
     }
 
-    function drawTrack(layer, points, now, colorFor) {
+    // The orbit already flown is a dotted line, the orbit ahead a solid one
+    function drawTrack(layer, points, now, color) {
         layer.clearLayers();
-        let run = [];
-        const flush = () => {
-            if (run.length < 2) return;
-            const past = run[0].t <= now;
-            L.polyline(splitAtEdges(run), {
-                color: colorFor(run[0]),
-                weight: 2,
-                opacity: past ? 0.45 : 0.9,
-                dashArray: past ? '4 6' : null,
-                interactive: false
-            }).addTo(layer);
-        };
-        points.forEach(p => {
-            const last = run[run.length - 1];
-            if (last && (p.sunlit !== last.sunlit || (p.t > now) !== (last.t > now))) {
-                run.push(p);
-                flush();
-                run = [];
-            }
-            run.push(p);
-        });
-        flush();
+        const past = points.filter(p => p.t <= now);
+        const future = points.filter(p => p.t > now);
+        if (past.length && future.length) future.unshift(past[past.length - 1]);
+        if (past.length > 1) {
+            L.polyline(splitAtEdges(past), { color: PAST, weight: 2, dashArray: '2 7', lineCap: 'round', interactive: false }).addTo(layer);
+        }
+        if (future.length > 1) {
+            L.polyline(splitAtEdges(future), { color, weight: 3, lineCap: 'round', interactive: false }).addTo(layer);
+        }
     }
 
     let lastTrackDraw = 0;
@@ -104,10 +99,9 @@ const IssMap = (() => {
         if (now - lastTrackDraw < 60000) return;
         lastTrackDraw = now;
         const period = Orbit.period();
-        drawTrack(trackLayer, Orbit.track('iss', now - period, now + period, 30000), now,
-            p => p.sunlit ? SUNLIT_COLOR : SHADOW_COLOR);
+        drawTrack(trackLayer, Orbit.track('iss', now - period, now + period, 30000), now, YELLOW);
         if (Orbit.has('tiangong')) {
-            drawTrack(tiangongTrack, Orbit.track('tiangong', now, now + Orbit.period('tiangong'), 30000), now, () => '#c084fc');
+            drawTrack(tiangongTrack, Orbit.track('tiangong', now, now + Orbit.period('tiangong'), 30000), now, BLUE);
         }
     }
 
@@ -129,7 +123,7 @@ const IssMap = (() => {
 
     function setFollowing(on) {
         following = on;
-        centerButton.textContent = on ? '⊕ Following ISS' : '⊕ Re-center map to ISS';
+        centerButton.textContent = on ? '⊕ Following' : '⊕ Re-center';
         centerButton.classList.toggle('active', on);
     }
     map.on('dragstart', () => setFollowing(false));
@@ -140,7 +134,7 @@ const IssMap = (() => {
     setFollowing(true);
 
     // --- FULLSCREEN ---
-    const section = document.getElementById('section-map');
+    const section = document.getElementById('map-card');
     const fullscreenButton = document.getElementById('fullscreen-map');
     if (!section.requestFullscreen) fullscreenButton.hidden = true;
     fullscreenButton.addEventListener('click', () => {
@@ -193,6 +187,8 @@ const IssMap = (() => {
         const now = date.getTime();
         lastState = state;
         marker.setLatLng([state.lat, state.lon]);
+        const bubble = marker.getElement()?.querySelector('.iss-bubble');
+        if (bubble) bubble.textContent = Orbit.isSunlit(date) ? '☀️ basking in sunlight' : '🌙 in Earth\'s shadow';
         footprint.setLatLngs(Orbit.footprint(state.lat, state.lon, state.alt));
 
         if (!hasView) {

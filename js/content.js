@@ -1,45 +1,60 @@
 // --- CREW MANIFEST ---
 const CREW_API = 'https://corquaid.github.io/international-space-station-APIs/JSON/people-in-space.json';
+const CREW_TONES = ['yellow', 'green', 'blue', 'pink'];
+
+// Crew photos are full-size Wikimedia originals (several megabytes each), so ask for a
+// 500px thumbnail and only fall back to the original, then to initials, if that fails
+function crewPhotoUrl(url) {
+    const m = url.match(/^(https:\/\/upload\.wikimedia\.org\/wikipedia\/commons)\/(\w\/\w\w\/([^/]+\.(?:jpe?g|png)))$/i);
+    return m ? `${m[1]}/thumb/${m[2]}/500px-${m[3]}` : url;
+}
+
+function crewPhotoFailed(img) {
+    if (img.dataset.retried || img.src === img.dataset.full) { img.remove(); return; }
+    img.dataset.retried = '1';
+    img.src = img.dataset.full;
+}
 
 async function getISSOnboard() {
     const container = document.getElementById('onboard-people');
+    const note = document.getElementById('crew-note');
     try {
         const res = await fetch(CREW_API);
         const data = await res.json();
 
         const issCrew = data.people.filter(p => p.iss === true);
-        document.getElementById('onboard-number').textContent =
-            `${issCrew.length} aboard ISS · ${data.people.length} total in space`;
+        document.getElementById('onboard-number').textContent = data.people.length;
+        note.textContent = `${issCrew.length} aboard the ISS · ${data.people.length - issCrew.length} aboard Tiangong`;
         container.innerHTML = '';
 
         data.people.forEach((person, i) => {
             const card = document.createElement('div');
-            card.className = 'crew-card';
+            card.className = `crew-card ${CREW_TONES[i % 4]}`;
 
             const isISS = person.iss === true;
             const flagUrl = person.flag_code
                 ? `https://flagcdn.com/w20/${person.flag_code}.png`
                 : null;
+            const initials = (person.name || '').split(' ').map(w => w[0]).slice(0, 2).join('');
 
             card.innerHTML = `
-                <div class="crew-index">CREW — ${String(i+1).padStart(2,'0')}</div>
+                <div class="crew-photo">
+                    ${initials}
+                    ${person.image ? `<img src="${crewPhotoUrl(person.image)}" data-full="${person.image}" alt="" onerror="crewPhotoFailed(this)">` : ''}
+                    <span class="crew-tag ${isISS ? 'pink' : 'blue'}">${isISS ? 'ISS' : 'Tiangong'}</span>
+                </div>
                 <div class="crew-name">
                     ${flagUrl ? `<img src="${flagUrl}" alt="${person.country}" title="${person.country}"
-                        style="height:12px; border-radius:2px; margin-right:8px; vertical-align:middle; opacity:0.9;"
-                        onerror="this.style.display='none'">` : ''}
-                    ${person.name}
+                        onerror="this.style.display='none'">` : ''}${person.name}
                 </div>
-                <div class="crew-craft">
-                    ${person.spacecraft || 'ISS'} · ${person.agency || ''}
-                    ${isISS ? '<span style="margin-left:8px;font-size:0.55rem;color:#ff44aa;border:1px solid #ff994466;padding:1px 6px;border-radius:10px;">ISS</span>' : '<span style="margin-left:8px;font-size:0.55rem;color:#ff9944;border:1px solid #ff994466;padding:1px 6px;border-radius:10px;">Tiangong</span>'}
-                </div>
+                <div class="crew-craft">${person.spacecraft || 'ISS'} · ${person.agency || ''}</div>
                 <div class="crew-bio">${person.position || ''}</div>
                 <a class="crew-link" href="${person.url || '#'}" target="_blank" rel="noreferrer">Wikipedia →</a>
             `;
             container.appendChild(card);
         });
     } catch(e) {
-        container.innerHTML = `<div class="loading-state">Crew data temporarily unavailable.</div>`;
+        note.textContent = 'Crew data temporarily unavailable.';
         console.error('Crew fetch error:', e);
     }
 }
@@ -61,108 +76,86 @@ document.getElementById('load-video').addEventListener('click', () => {
 });
 
 // --- MODULE EXPLORER ---
-// Schematic only: positions are simplified and not to scale
-const SEGMENTS = {
-    us: { label: 'United States', color: '#00d4ff' },
-    ru: { label: 'Russia', color: '#ff6b35' },
-    esa: { label: 'Europe (ESA)', color: '#ffd166' },
-    jaxa: { label: 'Japan (JAXA)', color: '#c084fc' },
-    shared: { label: 'Truss and power', color: '#5a7a8a' }
-};
-
+// Schematic only: positions are simplified and not to scale. box is [x, y, width, height].
 const MODULES = [
-    { name: 'Integrated Truss', seg: 'shared', year: '2000–2009', box: [398, 34, 14, 352],
-      desc: 'The 109 m backbone of the station. It carries the solar arrays, radiators and the rails for the Canadarm2 robotic arm.' },
-    { name: 'Solar Arrays', seg: 'shared', year: '2000–2009', box: [318, 40, 74, 22],
-      extra: [[418, 40, 74, 22], [318, 68, 74, 22], [418, 68, 74, 22], [318, 330, 74, 22], [418, 330, 74, 22], [318, 358, 74, 22], [418, 358, 74, 22]],
-      desc: 'Eight array wings that turn to follow the Sun and supply the station with electrical power, charging batteries for the shadow half of each orbit.' },
-    { name: 'Zvezda', seg: 'ru', year: '2000', box: [60, 192, 110, 36], label: true,
-      desc: 'Service module. Living quarters and life support for the Russian segment, and the engines used to raise the station\'s orbit.' },
-    { name: 'Zarya', seg: 'ru', year: '1998', box: [175, 192, 110, 36], label: true,
-      desc: 'The first module launched, on 20 November 1998. It gave early power and propulsion and is now mostly used for storage.' },
-    { name: 'Unity', seg: 'us', year: '1998', box: [290, 192, 60, 36], label: true,
-      desc: 'Node 1. The first US module, linking the Russian and US segments, with six ports for other modules.' },
-    { name: 'Destiny', seg: 'us', year: '2001', box: [355, 192, 100, 36], label: true,
-      desc: 'The US laboratory and the main research facility for American experiments. The truss is mounted on top of it.' },
-    { name: 'Harmony', seg: 'us', year: '2007', box: [460, 192, 70, 36], label: true,
-      desc: 'Node 2. The hub for the European and Japanese labs and the docking point for visiting crew and cargo spacecraft.' },
-    { name: 'Columbus', seg: 'esa', year: '2008', box: [475, 136, 40, 54],
-      desc: 'The European laboratory, used for research in materials, fluid physics and life sciences.' },
-    { name: 'Kibo', seg: 'jaxa', year: '2008', box: [468, 230, 54, 72],
-      desc: 'The Japanese laboratory and the largest single module, with its own airlock, robotic arm and an outside platform for experiments exposed to space.' },
-    { name: 'Quest', seg: 'us', year: '2001', box: [302, 140, 36, 50],
-      desc: 'The airlock used for spacewalks in US spacesuits.' },
-    { name: 'Tranquility', seg: 'us', year: '2010', box: [302, 230, 36, 60],
-      desc: 'Node 3. Holds life-support equipment, exercise machines and a toilet.' },
-    { name: 'Cupola', seg: 'esa', year: '2010', circle: [320, 304, 11],
-      desc: 'A seven-window observation dome built in Europe. It is where the crew watch Earth and operate the robotic arm.' },
-    { name: 'Leonardo', seg: 'us', year: '2011', box: [342, 250, 46, 24],
-      desc: 'Permanent Multipurpose Module, used for storage. It was built in Italy and first flew as a cargo carrier.' },
-    { name: 'BEAM', seg: 'us', year: '2016', box: [262, 250, 36, 24],
-      desc: 'Bigelow Expandable Activity Module. An inflatable module added as a technology test and kept on as storage.' },
-    { name: 'Poisk', seg: 'ru', year: '2009', box: [100, 148, 30, 42],
-      desc: 'A docking port for Soyuz and Progress spacecraft and an airlock for Russian spacewalks.' },
-    { name: 'Nauka', seg: 'ru', year: '2021', box: [92, 230, 46, 66],
-      desc: 'The Russian multipurpose laboratory, with crew quarters and a mounting point for the European Robotic Arm.' },
-    { name: 'Prichal', seg: 'ru', year: '2021', circle: [115, 310, 12],
-      desc: 'A ball-shaped node attached to Nauka that adds docking ports to the Russian segment.' },
-    { name: 'Rassvet', seg: 'ru', year: '2010', box: [215, 230, 30, 48],
-      desc: 'A small research module that also serves as a docking port and storage space.' }
+    { name: 'Zarya', box: [250, 130, 80, 40], tag: 'Russia · 1998', desc: 'The very first piece. It supplied early power, storage and propulsion, and is now mostly used as a big cupboard.' },
+    { name: 'Unity', box: [205, 135, 45, 30], tag: 'USA · 1998', desc: 'A connecting node with six docking ports, linking the American and Russian sides of the station.' },
+    { name: 'Zvezda', box: [330, 130, 90, 40], tag: 'Russia · 2000', desc: 'The early heart of the station: living quarters, life support and the engines used to boost the orbit.' },
+    { name: 'Destiny', box: [120, 132, 85, 36], tag: 'USA · 2001', desc: 'NASA\'s main science laboratory, packed with experiment racks for research in microgravity.' },
+    { name: 'Harmony', box: [40, 135, 80, 30], tag: 'USA · 2007', desc: 'A hub that joins the European and Japanese labs and holds crew sleeping quarters.' },
+    { name: 'Columbus', box: [50, 70, 60, 65], tag: 'Europe · 2008', desc: 'ESA\'s laboratory for physics, materials science and life-science experiments.' },
+    { name: 'Kibo', box: [45, 165, 70, 85], tag: 'Japan · 2008', desc: 'The largest single module, with its own robotic arm and an exposed porch for experiments outside.' },
+    { name: 'Tranquility', label: 'Tranq.', box: [207, 165, 41, 60], tag: 'USA · 2010', desc: 'Home to the exercise equipment, the toilet and much of the life-support hardware.' },
+    { name: 'Cupola', labelBelow: true, box: [212, 225, 31, 28], tag: 'Europe · 2010', desc: 'A seven-window observation dome — the best seat in the house for watching Earth roll by.' },
+    { name: 'Nauka', box: [345, 170, 60, 60], tag: 'Russia · 2021', desc: 'A multipurpose lab that added research space, a European robotic arm and more living room.' }
 ];
 
 (function buildModuleExplorer() {
     const svg = document.getElementById('module-svg');
+    const buttons = document.getElementById('module-buttons');
     const info = document.getElementById('module-info');
     const ns = 'http://www.w3.org/2000/svg';
 
-    function show(module, group) {
-        svg.querySelectorAll('.module.selected').forEach(el => el.classList.remove('selected'));
-        group.classList.add('selected');
+    svg.innerHTML = `
+        <rect class="truss" x="146" y="8" width="8" height="284" rx="3"/>
+        <rect class="array" x="96" y="8" width="44" height="34" rx="4"/>
+        <rect class="array" x="160" y="8" width="44" height="34" rx="4"/>
+        <rect class="array" x="96" y="258" width="44" height="34" rx="4"/>
+        <rect class="array" x="160" y="258" width="44" height="34" rx="4"/>
+        <text class="note" x="214" y="30">Truss + solar arrays</text>
+        <text class="note" x="8" y="18">← Forward</text>
+        <text class="note" x="420" y="18">Aft →</text>`;
+
+    const groups = [];
+    const chips = [];
+
+    function select(index) {
+        const module = MODULES[index];
+        groups.forEach((g, i) => g.classList.toggle('selected', i === index));
+        chips.forEach((c, i) => c.classList.toggle('selected', i === index));
         info.innerHTML = `
-            <div class="crew-index">${SEGMENTS[module.seg].label} · ${module.year}</div>
-            <div class="crew-name">${module.name}</div>
-            <div class="crew-bio">${module.desc}</div>`;
+            <div class="eyebrow">${module.tag}</div>
+            <div class="module-name">${module.name}</div>
+            <p>${module.desc}</p>`;
     }
 
-    MODULES.forEach(module => {
+    MODULES.forEach((module, i) => {
+        const [x, y, w, h] = module.box;
         const group = document.createElementNS(ns, 'g');
         group.setAttribute('class', 'module');
         group.setAttribute('tabindex', '0');
         group.setAttribute('role', 'button');
         group.setAttribute('aria-label', module.name);
-        group.style.setProperty('--seg', SEGMENTS[module.seg].color);
 
-        const boxes = module.box ? [module.box, ...(module.extra || [])] : [];
-        boxes.forEach(([x, y, w, h]) => {
-            const rect = document.createElementNS(ns, 'rect');
-            rect.setAttribute('x', x); rect.setAttribute('y', y);
-            rect.setAttribute('width', w); rect.setAttribute('height', h);
-            rect.setAttribute('rx', 4);
-            group.appendChild(rect);
-        });
-        if (module.circle) {
-            const circle = document.createElementNS(ns, 'circle');
-            circle.setAttribute('cx', module.circle[0]); circle.setAttribute('cy', module.circle[1]);
-            circle.setAttribute('r', module.circle[2]);
-            group.appendChild(circle);
-        }
-        if (module.label) {
-            const [x, y, w, h] = module.box;
-            const text = document.createElementNS(ns, 'text');
-            text.setAttribute('x', x + w / 2); text.setAttribute('y', y + h / 2 + 4);
-            text.textContent = module.name;
-            group.appendChild(text);
-        }
+        const rect = document.createElementNS(ns, 'rect');
+        rect.setAttribute('x', x); rect.setAttribute('y', y);
+        rect.setAttribute('width', w); rect.setAttribute('height', h);
+        rect.setAttribute('rx', module.name === 'Cupola' ? 14 : 6);
+        group.appendChild(rect);
 
-        group.addEventListener('click', () => show(module, group));
+        const text = document.createElementNS(ns, 'text');
+        text.setAttribute('x', x + w / 2);
+        text.setAttribute('y', module.labelBelow ? y + h + 15 : y + h / 2 + 4);
+        if (!module.labelBelow) text.setAttribute('class', 'inside');
+        if (w < 65) text.setAttribute('font-size', 10);
+        text.textContent = module.label || module.name;
+        group.appendChild(text);
+
+        group.addEventListener('click', () => select(i));
         group.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(module, group); }
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(i); }
         });
         svg.appendChild(group);
+        groups.push(group);
+
+        const chip = document.createElement('button');
+        chip.textContent = module.name;
+        chip.addEventListener('click', () => select(i));
+        buttons.appendChild(chip);
+        chips.push(chip);
     });
 
-    document.getElementById('module-legend').innerHTML = Object.values(SEGMENTS)
-        .map(seg => `<span><i style="background:${seg.color}"></i>${seg.label}</span>`).join('');
+    select(MODULES.findIndex(m => m.name === 'Cupola'));
 })();
 
 // --- DEORBIT COUNTDOWN ---
@@ -171,14 +164,54 @@ const DEORBIT_TARGET = Date.UTC(2031, 0, 1);
 
 function updateDeorbitCountdown() {
     const left = Math.max(0, DEORBIT_TARGET - Date.now());
-    const days = Math.floor(left / 86400000);
-    document.getElementById('deorbit-years').textContent = Math.floor(days / 365);
-    document.getElementById('deorbit-days').textContent = days % 365;
-    document.getElementById('deorbit-hours').textContent = Math.floor(left % 86400000 / 3600000);
-    document.getElementById('deorbit-minutes').textContent = Math.floor(left % 3600000 / 60000);
+    const days = left / 86400000;
+    const years = Math.floor(days / 365.25);
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('deorbit-years').textContent = years;
+    document.getElementById('deorbit-days').textContent = Math.floor(days - years * 365.25);
+    document.getElementById('deorbit-hours').textContent = pad(Math.floor(left / 3600000) % 24);
+    document.getElementById('deorbit-minutes').textContent = pad(Math.floor(left / 60000) % 60);
 }
 updateDeorbitCountdown();
 setInterval(updateDeorbitCountdown, 30000);
+
+// --- FAQ ---
+const FAQ = [
+    { q: 'Can I see the ISS without a telescope?', a: 'Yes. It is one of the brightest objects in the night sky — a steady white light gliding across the sky in a few minutes. It doesn\'t blink and makes no sound.' },
+    { q: 'Why can\'t I see it every night?', a: 'It has to pass over you while your sky is dark and the station is still lit by the Sun. That happens shortly after sunset or before sunrise. Daylight and shadow passes are listed under All passes but can\'t be seen.' },
+    { q: 'How often does it go around Earth?', a: 'About once every 93 minutes, which is 15 to 16 times a day. The crew see a sunrise and sunset on almost every orbit.' },
+    { q: 'Why does the track look like a wave?', a: 'The orbit is a circle tilted 51.6° to the equator. On a flat map it becomes a wave, and because Earth turns underneath, each orbit crosses the ground a little further west.' },
+    { q: 'How accurate are the positions?', a: 'Positions are calculated in your browser from published orbital elements refreshed several times a day — normally within a few kilometres, and pass times within seconds. Accuracy dips briefly after the station fires its engines.' }
+];
+
+(function buildFaq() {
+    const list = document.getElementById('faq');
+    const items = FAQ.map((entry, i) => {
+        const item = document.createElement('div');
+        item.className = 'faq-item';
+        const button = document.createElement('button');
+        const question = document.createElement('span');
+        const icon = document.createElement('i');
+        const answer = document.createElement('p');
+        question.textContent = entry.q;
+        answer.textContent = entry.a;
+        button.append(question, icon);
+        item.append(button, answer);
+        button.addEventListener('click', () => open(item.classList.contains('open') ? -1 : i));
+        list.appendChild(item);
+        return { item, button, icon };
+    });
+
+    // Only one answer is open at a time
+    function open(index) {
+        items.forEach(({ item, button, icon }, i) => {
+            item.classList.toggle('open', i === index);
+            button.setAttribute('aria-expanded', i === index);
+            icon.textContent = i === index ? '–' : '+';
+        });
+    }
+    open(0);
+})();
 
 // --- SHARE ---
 const shareButton = document.getElementById('share-btn');
@@ -189,8 +222,8 @@ shareButton.addEventListener('click', async () => {
             await navigator.share(page);
         } else {
             await navigator.clipboard.writeText(page.url);
-            shareButton.textContent = 'Link copied';
-            setTimeout(() => { shareButton.textContent = 'Share this page'; }, 1500);
+            shareButton.textContent = '✓ Link copied!';
+            setTimeout(() => { shareButton.textContent = 'Share this page ↗'; }, 1500);
         }
     } catch (e) { /* share sheet closed */ }
 });

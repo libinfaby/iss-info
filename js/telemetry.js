@@ -6,14 +6,6 @@ const Telemetry = (() => {
     let useMiles = false;
     try { useMiles = localStorage.getItem('units') === 'mi'; } catch (e) { /* storage blocked */ }
 
-    function flashValue(id) {
-        const el = $(id);
-        if (el) {
-            el.classList.add('updating');
-            setTimeout(() => el.classList.remove('updating'), 300);
-        }
-    }
-
     const distance = km => useMiles ? km * KM_TO_MI : km;
     const distanceUnit = () => useMiles ? 'mi' : 'km';
     const group = n => Math.round(n).toLocaleString('en-US');
@@ -28,9 +20,9 @@ const Telemetry = (() => {
     // --- UNITS ---
     const unitsButton = $('units-toggle');
     function showUnits() {
-        unitsButton.textContent = useMiles ? 'Units: miles' : 'Units: km';
-        $('altitude-unit').textContent = distanceUnit();
-        $('velocity-unit').textContent = useMiles ? 'mph' : 'km/h';
+        unitsButton.textContent = `Units: ${distanceUnit()} ⇄`;
+        $('altitude-unit').textContent = ' ' + distanceUnit();
+        $('velocity-unit').textContent = useMiles ? ' mph' : ' km/h';
     }
     unitsButton.addEventListener('click', () => {
         useMiles = !useMiles;
@@ -47,7 +39,7 @@ const Telemetry = (() => {
         const text = `ISS position ${new Date().toISOString().slice(0, 19)}Z: ${lastState.lat.toFixed(4)}°, ${lastState.lon.toFixed(4)}°, altitude ${lastState.alt.toFixed(1)} km`;
         try {
             await navigator.clipboard.writeText(text);
-            copyButton.textContent = 'Copied';
+            copyButton.textContent = '✓ Copied!';
         } catch (e) {
             copyButton.textContent = 'Copy failed';
         }
@@ -57,7 +49,7 @@ const Telemetry = (() => {
     // --- REVERSE GEOCODING ---
     // Throttled to once every 30 seconds to stay within Nominatim's usage policy
     let lastGeocode = 0;
-    let lastKnownLocation = 'Calculating...';
+    let lastKnownLocation = '…';
 
     // Nominatim has no answer over open water, so name the ocean from a coarse lookup
     function oceanName(lat, lon) {
@@ -85,7 +77,6 @@ const Telemetry = (() => {
             .then(data => {
                 const loc = data.address?.country || oceanName(lat, lon);
                 lastKnownLocation = loc;
-                flashValue('above');
                 $('above').textContent = loc;
             })
             .catch(e => console.warn('Geocode error:', e));
@@ -104,7 +95,6 @@ const Telemetry = (() => {
         stats = {
             midnight,
             period: Orbit.period(),
-            node: Orbit.lastAscendingNode(date),
             sunrises: Orbit.sunrisesBetween(midnight, now),
             transition: Orbit.nextSunTransition(date)
         };
@@ -117,23 +107,22 @@ const Telemetry = (() => {
         lastState = state;
         refreshStats(date);
 
-        ['latitude', 'longitude', 'altitude', 'velocity'].forEach(flashValue);
-        $('latitude').textContent = state.lat.toFixed(4) + '°';
-        $('longitude').textContent = state.lon.toFixed(4) + '°';
-        $('altitude').textContent = distance(state.alt).toFixed(2);
+        const latText = Math.abs(state.lat).toFixed(2) + '°' + (state.lat >= 0 ? 'N' : 'S');
+        const lonText = Math.abs(state.lon).toFixed(2) + '°' + (state.lon >= 0 ? 'E' : 'W');
+        $('latitude').textContent = latText;
+        $('longitude').textContent = lonText;
+        $('altitude').textContent = group(distance(state.alt));
         $('velocity').textContent = group(distance(state.speed));
+        $('map-position').textContent = `${latText}, ${lonText} · ${group(distance(state.alt))} ${distanceUnit()} up`;
 
         const sunlit = Orbit.isSunlit(date);
-        $('visibility').textContent = sunlit ? 'Sunlit' : 'In shadow';
+        $('visibility').textContent = sunlit ? '☀️ Daylight' : '🌙 In shadow';
         $('sun-countdown').textContent = stats.transition
             ? `${stats.transition.sunlit ? 'Sunrise' : 'Sunset'} in ${countdown(stats.transition.time - now)}`
             : 'Full sunlight this orbit';
 
         const sinceMidnight = now - stats.midnight;
-        $('orbits-today').textContent = Math.floor(sinceMidnight / stats.period);
-        $('orbit-progress').textContent = stats.node
-            ? `Current orbit ${Math.min(99, Math.floor((now - stats.node) / stats.period * 100))}%`
-            : 'Since 00:00 UTC';
+        $('orbits-today').textContent = (sinceMidnight / stats.period).toFixed(1);
         $('sunrises-today').textContent = stats.sunrises;
         $('distance-today').textContent = group(distance(state.speed * sinceMidnight / 3600000));
         $('distance-today-unit').textContent = `${distanceUnit()} since 00:00 UTC`;
@@ -141,8 +130,8 @@ const Telemetry = (() => {
 
         const observer = Observer.get();
         const look = observer && Orbit.lookAngles(date, observer);
-        $('observer-distance').textContent = look ? group(distance(look.range)) : '-';
-        $('observer-distance-unit').textContent = look ? `${distanceUnit()} from ${observer.name}` : 'Set a location below';
+        $('observer-distance').textContent = look ? `${group(distance(look.range))} ${distanceUnit()}` : '—';
+        $('observer-distance-unit').textContent = look ? 'Straight-line distance' : 'Set a location below';
 
         getCountryData(state.lat, state.lon);
     }

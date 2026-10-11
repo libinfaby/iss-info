@@ -1,14 +1,16 @@
 // --- STARFIELD ---
 const starfield = document.getElementById('starfield');
-for (let i = 0; i < 120; i++) {
-    const s = document.createElement('div');
+const STAR_HUES = [90, 10, 165, 235];
+for (let i = 0; i < 110; i++) {
+    const s = document.createElement('span');
     s.className = 'star';
-    const size = Math.random() * 2 + 0.5;
+    const size = Math.random() < 0.85 ? 2 : 4;
     s.style.cssText = `
         width:${size}px; height:${size}px;
         top:${Math.random()*100}%; left:${Math.random()*100}%;
+        background:${size > 2 ? `oklch(0.86 0.14 ${STAR_HUES[i % 4]})` : 'oklch(0.97 0.015 85)'};
         --dur:${2 + Math.random()*4}s;
-        animation-delay:${Math.random()*5}s;
+        animation-delay:${Math.random()*4}s;
     `;
     starfield.appendChild(s);
 }

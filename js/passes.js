@@ -18,12 +18,12 @@ const Passes = (() => {
 
     function showLocation(observer) {
         status.textContent = observer
-            ? `${observer.name} (${observer.lat.toFixed(2)}°, ${observer.lon.toFixed(2)}°)`
+            ? `📍 ${observer.name} (${observer.lat.toFixed(2)}°, ${observer.lon.toFixed(2)}°)`
             : 'No location set';
     }
 
     $('locate-me').addEventListener('click', async () => {
-        status.textContent = 'Finding your location...';
+        status.textContent = 'Finding you…';
         try { await Observer.locate(); } catch (e) { status.textContent = e.message; }
     });
 
@@ -31,7 +31,7 @@ const Passes = (() => {
         e.preventDefault();
         const query = $('location-input').value.trim();
         if (!query) return;
-        status.textContent = 'Searching...';
+        status.textContent = 'Searching…';
         try { await Observer.search(query); } catch (err) { status.textContent = err.message; }
     });
 
@@ -70,25 +70,24 @@ const Passes = (() => {
             dot = `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" class="sky-live"/>`;
         }
         $('sky-view').innerHTML = `
-            <circle cx="120" cy="120" r="100" class="sky-ring"/>
+            <circle cx="120" cy="120" r="100" class="sky-horizon"/>
             <circle cx="120" cy="120" r="66.7" class="sky-ring"/>
             <circle cx="120" cy="120" r="33.3" class="sky-ring"/>
-            <line x1="20" y1="120" x2="220" y2="120" class="sky-ring"/>
-            <line x1="120" y1="20" x2="120" y2="220" class="sky-ring"/>
-            <text x="120" y="13" class="sky-label">N</text>
-            <text x="232" y="124" class="sky-label">E</text>
-            <text x="120" y="236" class="sky-label">S</text>
-            <text x="8" y="124" class="sky-label">W</text>
-            <text x="124" y="92" class="sky-tick">60°</text>
-            <text x="124" y="58" class="sky-tick">30°</text>
+            <circle cx="120" cy="120" r="4" class="sky-zenith"/>
+            <text x="120" y="12" class="sky-label">N</text>
+            <text x="233" y="125" class="sky-label">E</text>
+            <text x="120" y="238" class="sky-label">S</text>
+            <text x="7" y="125" class="sky-label">W</text>
+            <text x="125" y="84" class="sky-tick">60°</text>
+            <text x="125" y="50" class="sky-tick">30°</text>
             ${arcs}${dot}`;
     }
 
     function selectPass(pass) {
         selected = pass;
         $('sky-caption').textContent = pass
-            ? `${day(pass.start)}, ${time(pass.start)}: rises ${compass(pass.startAz)}, peaks ${Math.round(pass.maxEl)}° up in the ${compass(pass.maxAz)}, sets ${compass(pass.endAz)}. Dashed line means the ISS is in Earth's shadow.`
-            : 'Pick a pass to see its path across the sky.';
+            ? `${day(pass.start)}, ${time(pass.start)}: rises ${compass(pass.startAz)}, peaks ${Math.round(pass.maxEl)}° up in the ${compass(pass.maxAz)}, sets ${compass(pass.endAz)}. Dotted means it is in Earth's shadow.`
+            : '';
         document.querySelectorAll('#pass-rows tr').forEach(row => {
             row.classList.toggle('selected', !!pass && Number(row.dataset.start) === pass.start);
         });
@@ -110,7 +109,7 @@ const Passes = (() => {
         $('filter-all').classList.toggle('active', !visibleOnly);
 
         if (!Observer.get()) {
-            rows.innerHTML = '<tr><td colspan="7" class="pass-empty">Set a location to see when the ISS passes over you.</td></tr>';
+            rows.innerHTML = '<tr><td colspan="7" class="pass-empty">🔭 No location yet — tell us where you are and the passes land here.</td></tr>';
             return;
         }
         if (!shown.length) {
@@ -179,7 +178,7 @@ const Passes = (() => {
             $('next-pass-detail').textContent =
                 `${day(next.start)} at ${time(next.start)} · ${compass(next.startAz)} → ${compass(next.endAz)} · up to ${Math.round(next.maxEl)}° high · ${Math.round((next.end - next.start) / 60000)} min`;
         } else {
-            $('next-pass-time').textContent = '-';
+            $('next-pass-time').textContent = '—';
             $('next-pass-detail').textContent = `No visible passes in the next ${DAYS} days from ${observer.name}.`;
         }
 

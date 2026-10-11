@@ -34,7 +34,7 @@ ISS Tracker is a live web dashboard that monitors the International Space Statio
 | Crew data | [corquaid ISS API](https://corquaid.github.io/international-space-station-APIs/) |
 | Astronaut bios | [Wikipedia API](https://www.mediawiki.org/wiki/API:Main_page) |
 | Country flags | [flagcdn.com](https://flagcdn.com/) |
-| Fonts | [Space Mono + Syne](https://fonts.google.com/) via Google Fonts |
+| Fonts | [Space Mono + Bricolage Grotesque](https://fonts.google.com/) via Google Fonts |
 
 ## Running Locally
 
