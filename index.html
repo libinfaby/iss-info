@@ -14,11 +14,12 @@
             integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
             crossorigin=""></script>
         <script src="https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
+        <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-        <link rel="stylesheet" href="./css/style.css?v=3">
+        <link rel="stylesheet" href="./css/style.css?v=4">
     </head>
     <body>
 
@@ -31,11 +32,16 @@
             </div>
             <nav>
                 <a href="#section-map">Live Location</a>
+                <a href="#section-passes">Passes</a>
+                <a href="#section-video">Live Video</a>
                 <a href="#section-onboard">Crew</a>
+                <a href="#section-station">Station</a>
                 <a href="#section-about">About</a>
                 <a href="#footer">Credits</a>
             </nav>
         </header>
+
+        <div id="overhead-banner" role="status" hidden></div>
 
         <section class="hero">
             <p class="hero-label">Real-time orbital monitoring</p>
@@ -62,24 +68,51 @@
             <div class="telemetry-cell">
                 <div class="telemetry-label">Altitude</div>
                 <div class="telemetry-value" id="altitude">-</div>
-                <div class="telemetry-unit">km</div>
+                <div class="telemetry-unit" id="altitude-unit">km</div>
             </div>
             <div class="telemetry-cell">
                 <div class="telemetry-label">Velocity</div>
                 <div class="telemetry-value" id="velocity">-</div>
-                <div class="telemetry-unit">km/h</div>
+                <div class="telemetry-unit" id="velocity-unit">km/h</div>
             </div>
             <div class="telemetry-cell">
-                <div class="telemetry-label">Visibility</div>
+                <div class="telemetry-label">Sunlight</div>
                 <div class="telemetry-value" id="visibility">-</div>
-                <div class="telemetry-unit">Condition</div>
+                <div class="telemetry-unit" id="sun-countdown">Condition</div>
             </div>
             <div class="telemetry-cell">
-                <div class="telemetry-label">Orbit Rate</div>
-                <div class="telemetry-value">16</div>
-                <div class="telemetry-unit">Orbits / Day</div>
+                <div class="telemetry-label">Orbits Today</div>
+                <div class="telemetry-value" id="orbits-today">-</div>
+                <div class="telemetry-unit" id="orbit-progress">Since 00:00 UTC</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Sunrises Today</div>
+                <div class="telemetry-value" id="sunrises-today">-</div>
+                <div class="telemetry-unit">Seen by the crew</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Distance Today</div>
+                <div class="telemetry-value" id="distance-today">-</div>
+                <div class="telemetry-unit" id="distance-today-unit">km since 00:00 UTC</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">Distance From You</div>
+                <div class="telemetry-value" id="observer-distance">-</div>
+                <div class="telemetry-unit" id="observer-distance-unit">Set a location below</div>
+            </div>
+            <div class="telemetry-cell">
+                <div class="telemetry-label">ISS Time</div>
+                <div class="telemetry-value" id="utc-clock">-</div>
+                <div class="telemetry-unit">UTC</div>
             </div>
         </section>
+
+        <div class="telemetry-tools">
+            <button class="btn" id="units-toggle">Units: km</button>
+            <button class="btn" id="copy-position">Copy position</button>
+            <button class="btn" id="share-btn">Share this page</button>
+            <span class="data-note" id="data-note"></span>
+        </div>
 
         <section id="section-map">
             <div class="section-header">
@@ -87,7 +120,74 @@
                 <span class="live-badge"><span class="live-dot"></span>Live</span>
             </div>
             <div id="map"></div>
-            <button id="center-map">⊕ Re-center map to ISS</button>
+            <div class="map-controls">
+                <button class="btn" id="center-map">⊕ Re-center map to ISS</button>
+                <button class="btn" id="fullscreen-map">⤢ Fullscreen</button>
+                <div class="time-slider">
+                    <button class="btn" id="time-live">Live</button>
+                    <input type="range" id="time-slider" min="-90" max="90" step="1" value="0" aria-label="Minutes from now">
+                    <span id="time-slider-label"></span>
+                </div>
+            </div>
+            <div class="map-legend">
+                <span><i style="background:#ff6b35"></i>Track in sunlight</span>
+                <span><i style="background:#4a7fb5"></i>Track in Earth's shadow</span>
+                <span><i class="dashed"></i>Previous orbit</span>
+                <span><i class="ring"></i>Area that can see the ISS</span>
+                <span><i class="dot" style="background:#ffd166"></i>Sun overhead</span>
+            </div>
+        </section>
+
+        <section id="section-passes" class="content-section">
+            <div class="section-header">
+                <span class="section-title">When Can I See the ISS?</span>
+            </div>
+            <div class="location-bar">
+                <button class="btn" id="locate-me">Use my location</button>
+                <form id="location-form">
+                    <input type="text" id="location-input" placeholder="or search a city" aria-label="Search a city">
+                    <button class="btn" type="submit">Search</button>
+                </form>
+                <span id="location-status">No location set</span>
+            </div>
+            <div class="passes-layout">
+                <div>
+                    <div class="next-pass">
+                        <div class="telemetry-label">Next visible pass in</div>
+                        <div class="next-pass-time" id="next-pass-time">-</div>
+                        <div class="telemetry-unit" id="next-pass-detail">Set a location to get pass times.</div>
+                    </div>
+                    <div class="pass-filters">
+                        <button class="btn" id="filter-visible">Visible only</button>
+                        <button class="btn" id="filter-all">All passes</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="pass-table">
+                            <thead>
+                                <tr><th>Date</th><th>Start</th><th>Highest</th><th>End</th><th>Direction</th><th>Max height</th><th>Brightness</th></tr>
+                            </thead>
+                            <tbody id="pass-rows"></tbody>
+                        </table>
+                    </div>
+                    <p class="note">Passes for the next 10 days that rise at least 10° above the horizon. A pass is visible when your sky is dark and the station is still in sunlight. Times are in this device's time zone; brightness is an estimate.</p>
+                </div>
+                <div class="sky-panel">
+                    <svg id="sky-view" viewBox="0 0 240 240" role="img" aria-label="Path of the selected pass across the sky"></svg>
+                    <p class="note" id="sky-caption"></p>
+                    <p class="note">Centre is straight overhead, the outer ring is the horizon.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-video" class="content-section">
+            <div class="section-header">
+                <span class="section-title">Live Video From the ISS</span>
+            </div>
+            <div class="video-frame" id="video-frame">
+                <button class="btn" id="load-video">▶ Load NASA live stream</button>
+                <p class="note">The stream comes from YouTube. It is dark when the station is on the night side of Earth and shows a holding screen when the signal drops.</p>
+            </div>
+            <p class="note">Not playing? <a href="https://www.nasa.gov/live/" target="_blank" rel="noreferrer">Watch on NASA Live →</a></p>
         </section>
 
         <section id="section-onboard">
@@ -97,6 +197,61 @@
             <div class="crew-count">Personnel aboard: <span id="onboard-number">-</span></div>
             <div class="crew-grid" id="onboard-people">
                 <div class="loading-state">Fetching crew manifest...</div>
+            </div>
+        </section>
+
+        <section id="section-station" class="content-section">
+            <div class="section-header">
+                <span class="section-title">Explore the Station</span>
+            </div>
+            <div class="station-layout">
+                <div>
+                    <svg id="module-svg" viewBox="40 20 510 380" role="group" aria-label="Diagram of ISS modules"></svg>
+                    <div class="map-legend" id="module-legend"></div>
+                </div>
+                <div class="module-info" id="module-info">
+                    <div class="crew-index">Module explorer</div>
+                    <div class="crew-bio">Select a module to learn what it does. The diagram is a simplified layout and is not to scale.</div>
+                </div>
+            </div>
+
+            <div class="compare-grid">
+                <div>
+                    <div class="telemetry-label">How big is it?</div>
+                    <div class="bar-row"><span>ISS</span><div class="bar"><i style="width:100%"></i></div><b>109 m</b></div>
+                    <div class="bar-row"><span>Football pitch</span><div class="bar"><i style="width:96%"></i></div><b>105 m</b></div>
+                    <div class="bar-row"><span>Boeing 747-8</span><div class="bar"><i style="width:70%"></i></div><b>76 m</b></div>
+                    <div class="bar-row"><span>Blue whale</span><div class="bar"><i style="width:28%"></i></div><b>30 m</b></div>
+                </div>
+                <div>
+                    <div class="telemetry-label">How fast is it?</div>
+                    <div class="bar-row"><span>ISS</span><div class="bar"><i style="width:100%"></i></div><b>27,600 km/h</b></div>
+                    <div class="bar-row"><span>Rifle bullet</span><div class="bar"><i style="width:12%"></i></div><b>3,400 km/h</b></div>
+                    <div class="bar-row"><span>Concorde</span><div class="bar"><i style="width:8%"></i></div><b>2,180 km/h</b></div>
+                    <div class="bar-row"><span>Airliner</span><div class="bar"><i style="width:3.3%"></i></div><b>900 km/h</b></div>
+                </div>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item"><b>1998</b><span>Zarya, the first module, is launched</span></div>
+                <div class="timeline-item"><b>2000</b><span>Expedition 1 arrives; people have lived aboard ever since</span></div>
+                <div class="timeline-item"><b>2001</b><span>Destiny laboratory and Canadarm2 are added</span></div>
+                <div class="timeline-item"><b>2008</b><span>European Columbus and Japanese Kibo labs arrive</span></div>
+                <div class="timeline-item"><b>2011</b><span>Assembly is completed as the Space Shuttle retires</span></div>
+                <div class="timeline-item"><b>2020</b><span>First crew arrives on a commercial spacecraft, Crew Dragon</span></div>
+                <div class="timeline-item"><b>2021</b><span>Russian Nauka laboratory docks</span></div>
+                <div class="timeline-item planned"><b>2031</b><span>Planned controlled deorbit into the Pacific Ocean</span></div>
+            </div>
+
+            <div class="deorbit">
+                <div class="telemetry-label">Time until the planned deorbit</div>
+                <div class="stats-row">
+                    <div class="stat-item"><div class="stat-num" id="deorbit-years">-</div><div class="stat-desc">Years</div></div>
+                    <div class="stat-item"><div class="stat-num" id="deorbit-days">-</div><div class="stat-desc">Days</div></div>
+                    <div class="stat-item"><div class="stat-num" id="deorbit-hours">-</div><div class="stat-desc">Hours</div></div>
+                    <div class="stat-item"><div class="stat-num" id="deorbit-minutes">-</div><div class="stat-desc">Minutes</div></div>
+                </div>
+                <p class="note">Counted to 1 January 2031. NASA's plan is to retire the station in early 2031; no exact date has been set.</p>
             </div>
         </section>
 
@@ -128,13 +283,43 @@
             </div>
         </section>
 
+        <section id="section-faq" class="content-section">
+            <div class="section-header">
+                <span class="section-title">Questions</span>
+            </div>
+            <div class="faq">
+                <details>
+                    <summary>Can I see the ISS without a telescope?</summary>
+                    <p>Yes. It is one of the brightest objects in the night sky and looks like a steady white light moving smoothly from one side of the sky to the other in a few minutes. It does not blink and makes no sound.</p>
+                </details>
+                <details>
+                    <summary>Why can't I see it every night?</summary>
+                    <p>You can only see it when it passes over your area while your sky is dark and the station itself is still lit by the Sun. That happens shortly after sunset or before sunrise. Passes in daylight or in Earth's shadow are listed under All passes but cannot be seen.</p>
+                </details>
+                <details>
+                    <summary>How often does it go around Earth?</summary>
+                    <p>About once every 93 minutes, which is 15 to 16 times a day. The crew see a sunrise and a sunset on almost every orbit.</p>
+                </details>
+                <details>
+                    <summary>Why does the track on the map look like a wave?</summary>
+                    <p>The orbit is a circle tilted 51.6° to the equator. Drawn on a flat map it becomes a wave, and because Earth turns underneath, each orbit crosses the ground a little further west than the last.</p>
+                </details>
+                <details>
+                    <summary>How accurate are the positions and pass times?</summary>
+                    <p>Positions are calculated in your browser from the station's published orbital elements, refreshed several times a day. They are normally right to within a few kilometres and pass times to within a few seconds. Accuracy drops for a while after the station fires its engines to adjust its orbit.</p>
+                </details>
+            </div>
+        </section>
+
         <footer id="footer">
             <div class="footer-credits">
                 <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet.js</a>
                 <a href="https://www.openstreetmap.org/about" target="_blank" rel="noreferrer">OpenStreetMap</a>
                 <a href="https://www.jawg.io/" target="_blank" rel="noreferrer">JawgMaps</a>
                 <a href="https://wheretheiss.at/" target="_blank" rel="noreferrer">WhereTheIss.at</a>
-                <a href="http://open-notify.org/" target="_blank" rel="noreferrer">Open-Notify</a>
+                <a href="https://celestrak.org/" target="_blank" rel="noreferrer">CelesTrak</a>
+                <a href="https://github.com/shashwatak/satellite-js" target="_blank" rel="noreferrer">satellite.js</a>
+                <a href="https://www.esri.com/" target="_blank" rel="noreferrer">Esri</a>
                 <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noreferrer">Nominatim</a>
                 <a href="https://www.mediawiki.org/wiki/API:Main_page" target="_blank" rel="noreferrer">MediaWiki</a>
             </div>
@@ -143,7 +328,13 @@
             </div>
         </footer>
 
-        <script src="./js/index.js?v=5"></script>
+        <script src="./js/orbit.js?v=6"></script>
+        <script src="./js/observer.js?v=6"></script>
+        <script src="./js/map.js?v=6"></script>
+        <script src="./js/telemetry.js?v=6"></script>
+        <script src="./js/passes.js?v=6"></script>
+        <script src="./js/content.js?v=6"></script>
+        <script src="./js/index.js?v=6"></script>
     </body>
 
 </html>

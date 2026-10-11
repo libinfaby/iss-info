@@ -13,163 +13,38 @@ for (let i = 0; i < 120; i++) {
     starfield.appendChild(s);
 }
 
-// --- MAP ---
-const map = L.map('map', { zoomControl: true });
-const tileUrl = 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=SzrSvA5Rb0Pewv0YPkhpOftwqAJZTFJApRlriSuJRXroUWg0uD3nhJxtNvc1ahWF';
-const attribution = '<a href="https://www.jawg.io" target="_blank">&copy; Jawg</a> &mdash; <a href="https://www.openstreetmap.org" target="_blank">&copy; OpenStreetMap</a>';
-L.tileLayer(tileUrl, { attribution, minZoom: 2, maxZoom: 22 }).addTo(map);
-
-const terminator = L.terminator({ fillOpacity: 0.25 });
-terminator.addTo(map);
-setInterval(() => terminator.setTime(), 10000);
-
-const issIcon = L.divIcon({
-    html: `<div style="
-        width: 12px;
-        height: 12px;
-        background: #00d4ff;
-        border-radius: 50%;
-        box-shadow: 0 0 8px #00d4ff, 0 0 16px rgba(0,212,255,0.5);
-    "></div>`,
-    iconSize: [12, 12],
-    iconAnchor: [6, 6],
-    className: ''
-});
-// const issIcon = L.divIcon({
-//     html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-//         <circle cx="12" cy="12" r="4" fill="#00d4ff" opacity="0.9"/>
-//         <circle cx="12" cy="12" r="8" stroke="#00d4ff" stroke-width="1" opacity="0.4"/>
-//         <line x1="0" y1="12" x2="24" y2="12" stroke="#00d4ff" stroke-width="1.5" opacity="0.7"/>
-//         <line x1="12" y1="0" x2="12" y2="24" stroke="#00d4ff" stroke-width="1.5" opacity="0.7"/>
-//     </svg>`,
-//     iconSize: [24, 24],
-//     iconAnchor: [12, 12],
-//     className: ''
-// });
-const marker = L.marker([0, 0], { icon: issIcon }).addTo(map);
-
-let firstTime = true;
-
-function flashValue(id) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.classList.add('updating');
-        setTimeout(() => el.classList.remove('updating'), 300);
-    }
+// --- LIVE LOOP ---
+// One tick a second drives the map, the telemetry tiles and the pass countdown
+function tick() {
+    const now = new Date();
+    const state = Orbit.stateAt(now);
+    if (!state) return;
+    IssMap.update(state, now);
+    Telemetry.update(state, now);
+    Passes.tick(now);
 }
 
-// --- ISS LOCATION ---
-async function getISSData() {
+function showDataNote() {
+    document.getElementById('data-note').textContent = Orbit.isStale()
+        ? 'Orbit data could not be refreshed; positions may drift.'
+        : '';
+}
+
+async function start() {
     try {
-        const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
-        const data = await res.json();
-
-        if (data.latitude == null || data.longitude == null) {
-            console.warn('ISS API bad response:', data);
-            return;
-        }
-
-        const { latitude, longitude, altitude, velocity, visibility } = data;
-
-        marker.setLatLng([latitude, longitude]);
-        if (firstTime) {
-            map.setView([latitude, longitude], 3);
-            firstTime = false;
-        }
-
-        ['latitude','longitude','altitude','velocity','visibility'].forEach(flashValue);
-        document.getElementById('latitude').textContent = latitude.toFixed(4) + '°';
-        document.getElementById('longitude').textContent = longitude.toFixed(4) + '°';
-        document.getElementById('altitude').textContent = altitude.toFixed(2);
-        document.getElementById('velocity').textContent = velocity.toFixed(0);
-        document.getElementById('visibility').textContent = visibility;
-
-        // LOG THIS — tells you exactly what coords are going to geocoder
-        console.log('Sending to geocoder:', latitude.toFixed(4), longitude.toFixed(4));
-        getCountryData(latitude, longitude);
-
-    } catch(e) {
-        console.warn('ISS location fetch failed, retrying...', e);
+        await Orbit.load('iss');
+    } catch (e) {
+        console.warn('Orbit data fetch failed, retrying...', e);
+        document.getElementById('data-note').textContent = 'Orbit data unavailable, retrying...';
+        setTimeout(start, 30000);
+        return;
     }
+    showDataNote();
+    Passes.compute();
+    tick();
+    setInterval(tick, 1000);
+    // Orbital elements go out of date, so pick up a fresh set through the day
+    setInterval(() => Orbit.load('iss').then(showDataNote).catch(() => {}), 3600 * 1000);
 }
 
-getISSData();
-setInterval(getISSData, 1000);
-
-document.getElementById('center-map').addEventListener('click', () => {
-    firstTime = true;
-    getISSData();
-});
-
-// --- REVERSE GEOCODING ---
-// Throttled — only call every 5 seconds, not every 1s (saves API quota)
-let lastGeocode = 0;
-let lastKnownLocation = 'Calculating...';
-
-function getCountryData(lat, lon) {
-    const now = Date.now();
-    document.getElementById('above').textContent = lastKnownLocation;
-    if (now - lastGeocode < 30000) return;
-    lastGeocode = now;
-
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&format=json`;
-
-    fetch(url, { headers: { 'Accept-Language': 'en' } })
-        .then(r => r.json())
-        .then(data => {
-            const loc = data.address?.country || 'Ocean';
-            lastKnownLocation = loc;
-            flashValue('above');
-            document.getElementById('above').textContent = loc;
-        })
-        .catch(e => console.warn('Geocode error:', e));
-}
-
-// --- CREW MANIFEST ---
-const CREW_API = 'https://corquaid.github.io/international-space-station-APIs/JSON/people-in-space.json';
-
-async function getISSOnboard() {
-    const container = document.getElementById('onboard-people');
-    try {
-        const res = await fetch(CREW_API);
-        const data = await res.json();
-
-        const issCrew = data.people.filter(p => p.iss === true);
-        document.getElementById('onboard-number').textContent =
-            `${issCrew.length} aboard ISS · ${data.people.length} total in space`;
-        container.innerHTML = '';
-
-        data.people.forEach((person, i) => {
-            const card = document.createElement('div');
-            card.className = 'crew-card';
-
-            const isISS = person.iss === true;
-            const flagUrl = person.flag_code
-                ? `https://flagcdn.com/w20/${person.flag_code}.png`
-                : null;
-
-            card.innerHTML = `
-                <div class="crew-index">CREW — ${String(i+1).padStart(2,'0')}</div>
-                <div class="crew-name">
-                    ${flagUrl ? `<img src="${flagUrl}" alt="${person.country}" title="${person.country}"
-                        style="height:12px; border-radius:2px; margin-right:8px; vertical-align:middle; opacity:0.9;"
-                        onerror="this.style.display='none'">` : ''}
-                    ${person.name}
-                </div>
-                <div class="crew-craft">
-                    ${person.spacecraft || 'ISS'} · ${person.agency || ''}
-                    ${isISS ? '<span style="margin-left:8px;font-size:0.55rem;color:#ff44aa;border:1px solid #ff994466;padding:1px 6px;border-radius:10px;">ISS</span>' : '<span style="margin-left:8px;font-size:0.55rem;color:#ff9944;border:1px solid #ff994466;padding:1px 6px;border-radius:10px;">Tiangong</span>'}
-                </div>
-                <div class="crew-bio">${person.position || ''}</div>
-                <a class="crew-link" href="${person.url || '#'}" target="_blank" rel="noreferrer">Wikipedia →</a>
-            `;
-            container.appendChild(card);
-        });
-    } catch(e) {
-        container.innerHTML = `<div class="loading-state">Crew data temporarily unavailable.</div>`;
-        console.error('Crew fetch error:', e);
-    }
-}
-
-
-getISSOnboard();
+start();
