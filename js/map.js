@@ -3,7 +3,7 @@ const IssMap = (() => {
     const map = L.map('map', { zoomControl: true });
 
     const jawgUrl = 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=SzrSvA5Rb0Pewv0YPkhpOftwqAJZTFJApRlriSuJRXroUWg0uD3nhJxtNvc1ahWF';
-    const jawgAttribution = '<a href="https://www.jawg.io" target="_blank">&copy; Jawg</a> &mdash; <a href="https://www.openstreetmap.org" target="_blank">&copy; OpenStreetMap</a>';
+    const jawgAttribution = '<a href="https://www.jawg.io" target="_blank">&copy; Jawg</a> - <a href="https://www.openstreetmap.org" target="_blank">&copy; OpenStreetMap</a>';
     const darkLayer = L.tileLayer(jawgUrl, { attribution: jawgAttribution, minZoom: 2, maxZoom: 22, className: 'tint-tiles' }).addTo(map);
     const satelliteLayer = L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',

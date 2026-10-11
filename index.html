@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Live International Space Station Monitor</title>
-        <link rel="icon" type="image/x-icon" href="./img/ISS_emblem.png">
+        <link rel="icon" type="image/svg+xml" href="./img/favicon.svg">
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
             integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
@@ -20,7 +20,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-        <link rel="stylesheet" href="./css/style.css?v=7">
+        <link rel="stylesheet" href="./css/style.css?v=8">
     </head>
     <body>
 
@@ -60,19 +60,19 @@
                         <div class="hero-planet"><div></div></div>
                         <div class="hero-card yellow">
                             <div class="eyebrow">Latitude</div>
-                            <div class="hero-value" id="latitude">—</div>
+                            <div class="hero-value" id="latitude">-</div>
                         </div>
                         <div class="hero-card green">
                             <div class="eyebrow">Longitude</div>
-                            <div class="hero-value" id="longitude">—</div>
+                            <div class="hero-value" id="longitude">-</div>
                         </div>
                         <div class="hero-card blue">
                             <div class="eyebrow">Altitude</div>
-                            <div class="hero-value"><span id="altitude">—</span><small id="altitude-unit"> km</small></div>
+                            <div class="hero-value"><span id="altitude">-</span><small id="altitude-unit"> km</small></div>
                         </div>
                         <div class="hero-card pink">
                             <div class="eyebrow">Speed</div>
-                            <div class="hero-value"><span id="velocity">—</span><small id="velocity-unit"> km/h</small></div>
+                            <div class="hero-value"><span id="velocity">-</span><small id="velocity-unit"> km/h</small></div>
                         </div>
                     </div>
                 </header>
@@ -80,32 +80,32 @@
                 <section class="stats" id="section-details">
                     <div class="stat-tile">
                         <div class="eyebrow">Sunlight</div>
-                        <div class="stat-value" id="visibility">—</div>
+                        <div class="stat-value" id="visibility">-</div>
                         <div class="stat-sub" id="sun-countdown">Condition</div>
                     </div>
                     <div class="stat-tile">
                         <div class="eyebrow">Orbits today</div>
-                        <div class="stat-value" id="orbits-today">—</div>
+                        <div class="stat-value" id="orbits-today">-</div>
                         <div class="stat-sub">Since 00:00 UTC</div>
                     </div>
                     <div class="stat-tile">
                         <div class="eyebrow">Sunrises today</div>
-                        <div class="stat-value" id="sunrises-today">—</div>
+                        <div class="stat-value" id="sunrises-today">-</div>
                         <div class="stat-sub">Seen by the crew</div>
                     </div>
                     <div class="stat-tile">
                         <div class="eyebrow">Distance today</div>
-                        <div class="stat-value" id="distance-today">—</div>
+                        <div class="stat-value" id="distance-today">-</div>
                         <div class="stat-sub" id="distance-today-unit">km since 00:00 UTC</div>
                     </div>
                     <div class="stat-tile">
                         <div class="eyebrow">Distance from you</div>
-                        <div class="stat-value" id="observer-distance">—</div>
+                        <div class="stat-value" id="observer-distance">-</div>
                         <div class="stat-sub" id="observer-distance-unit">Set a location below</div>
                     </div>
                     <div class="stat-tile">
                         <div class="eyebrow">ISS time</div>
-                        <div class="stat-value" id="utc-clock">—</div>
+                        <div class="stat-value" id="utc-clock">-</div>
                         <div class="stat-sub">UTC</div>
                     </div>
                 </section>
@@ -119,7 +119,7 @@
                 <section id="section-map">
                     <div class="section-head split">
                         <div>
-                            <div class="kicker yellow">01 — Live orbital position</div>
+                            <div class="kicker yellow">01 - Live orbital position</div>
                             <h2>Wheee, there it goes</h2>
                         </div>
                         <div class="legend">
@@ -132,7 +132,7 @@
                     <div class="map-card" id="map-card">
                         <div id="map"></div>
                         <div class="map-foot">
-                            <span>Over <b id="above">…</b> · <span id="map-position">—</span></span>
+                            <span>Over <b id="above">…</b> · <span id="map-position">-</span></span>
                             <div class="map-buttons">
                                 <button class="btn-soft" id="center-map">⊕ Re-center</button>
                                 <button class="btn-soft" id="fullscreen-map">⤢ Fullscreen</button>
@@ -147,7 +147,7 @@
                 </section>
 
                 <section id="section-passes">
-                    <div class="kicker green">02 — Passes</div>
+                    <div class="kicker green">02 - Passes</div>
                     <h2 class="gap">When can I see it?</h2>
                     <div class="passes-grid">
                         <div class="card-solid green location-card">
@@ -160,7 +160,7 @@
                             <div class="mono" id="location-status">No location set</div>
                             <div class="next-pass">
                                 <div class="eyebrow">Next visible pass in</div>
-                                <div class="next-pass-time" id="next-pass-time">—</div>
+                                <div class="next-pass-time" id="next-pass-time">-</div>
                                 <div id="next-pass-detail">Set a location to get pass times.</div>
                             </div>
                         </div>
@@ -192,7 +192,7 @@
                 </section>
 
                 <section id="section-video">
-                    <div class="kicker pink">03 — Live video</div>
+                    <div class="kicker pink">03 - Live video</div>
                     <h2 class="gap">Look out the window</h2>
                     <div class="video-card">
                         <div class="video-frame" id="video-frame">
@@ -207,10 +207,10 @@
                 <section id="section-onboard">
                     <div class="section-head split">
                         <div>
-                            <div class="kicker blue">04 — Crew manifest · ISS &amp; Tiangong</div>
+                            <div class="kicker blue">04 - Crew manifest · ISS &amp; Tiangong</div>
                             <h2>Who's up there?</h2>
                         </div>
-                        <div class="count-pill">Humans in space: <span id="onboard-number">—</span></div>
+                        <div class="count-pill">Humans in space: <span id="onboard-number">-</span></div>
                     </div>
                     <div class="crew-grid" id="onboard-people">
                         <div class="crew-card skeleton"><div class="crew-photo"></div><div class="bone wide"></div><div class="bone"></div></div>
@@ -224,7 +224,7 @@
                 </section>
 
                 <section id="section-station">
-                    <div class="kicker yellow">05 — Explore the station</div>
+                    <div class="kicker yellow">05 - Explore the station</div>
                     <h2 class="gap">Take the tour</h2>
                     <div class="card explorer">
                         <div>
@@ -275,10 +275,10 @@
                     <div class="card-solid pink countdown">
                         <div class="card-heading">Countdown to splashdown 🌊</div>
                         <div class="countdown-grid">
-                            <div><b id="deorbit-years">—</b><span>Years</span></div>
-                            <div><b id="deorbit-days">—</b><span>Days</span></div>
-                            <div><b id="deorbit-hours">—</b><span>Hours</span></div>
-                            <div><b id="deorbit-minutes">—</b><span>Minutes</span></div>
+                            <div><b id="deorbit-years">-</b><span>Years</span></div>
+                            <div><b id="deorbit-days">-</b><span>Days</span></div>
+                            <div><b id="deorbit-hours">-</b><span>Hours</span></div>
+                            <div><b id="deorbit-minutes">-</b><span>Minutes</span></div>
                         </div>
                         <p>Counted to 1 January 2031. NASA plans to retire the station in early 2031; no exact date has been set.</p>
                     </div>
@@ -286,9 +286,9 @@
 
                 <section id="section-about" class="about">
                     <div>
-                        <div class="kicker green">06 — About</div>
+                        <div class="kicker green">06 - About</div>
                         <h2 class="gap-small">The biggest thing we've ever built in space</h2>
-                        <p class="lead">The International Space Station is a modular station in low Earth orbit — the largest crewed object ever assembled in space. It circles Earth roughly every 90 minutes at about 28,000 km/h.</p>
+                        <p class="lead">The International Space Station is a modular station in low Earth orbit - the largest crewed object ever assembled in space. It circles Earth roughly every 90 minutes at about 28,000 km/h.</p>
                         <p class="lead">Run by NASA, Roscosmos, ESA, JAXA and CSA, it has had people aboard continuously since November 2000, doing experiments in biology, physics, astronomy and meteorology that only work in microgravity. <a href="https://www.nasa.gov/audience/forstudents/5-8/features/nasa-knows/what-is-the-iss-58.html" target="_blank" rel="noreferrer">Read more at NASA →</a></p>
                         <div class="fact-grid">
                             <div class="fact yellow"><b>~400 km</b><span>Orbital altitude</span></div>
@@ -323,10 +323,10 @@
 
         <script src="./js/orbit.js?v=7"></script>
         <script src="./js/observer.js?v=7"></script>
-        <script src="./js/map.js?v=7"></script>
-        <script src="./js/telemetry.js?v=7"></script>
-        <script src="./js/passes.js?v=7"></script>
-        <script src="./js/content.js?v=7"></script>
+        <script src="./js/map.js?v=8"></script>
+        <script src="./js/telemetry.js?v=8"></script>
+        <script src="./js/passes.js?v=8"></script>
+        <script src="./js/content.js?v=8"></script>
         <script src="./js/index.js?v=7"></script>
     </body>
 

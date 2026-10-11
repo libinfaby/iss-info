@@ -130,7 +130,7 @@ const Telemetry = (() => {
 
         const observer = Observer.get();
         const look = observer && Orbit.lookAngles(date, observer);
-        $('observer-distance').textContent = look ? `${group(distance(look.range))} ${distanceUnit()}` : '—';
+        $('observer-distance').textContent = look ? `${group(distance(look.range))} ${distanceUnit()}` : '-';
         $('observer-distance-unit').textContent = look ? 'Straight-line distance' : 'Set a location below';
 
         getCountryData(state.lat, state.lon);

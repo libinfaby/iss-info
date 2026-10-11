@@ -78,16 +78,46 @@ document.getElementById('load-video').addEventListener('click', () => {
 // --- MODULE EXPLORER ---
 // Schematic only: positions are simplified and not to scale. box is [x, y, width, height].
 const MODULES = [
-    { name: 'Zarya', box: [250, 130, 80, 40], tag: 'Russia · 1998', desc: 'The very first piece. It supplied early power, storage and propulsion, and is now mostly used as a big cupboard.' },
-    { name: 'Unity', box: [205, 135, 45, 30], tag: 'USA · 1998', desc: 'A connecting node with six docking ports, linking the American and Russian sides of the station.' },
-    { name: 'Zvezda', box: [330, 130, 90, 40], tag: 'Russia · 2000', desc: 'The early heart of the station: living quarters, life support and the engines used to boost the orbit.' },
-    { name: 'Destiny', box: [120, 132, 85, 36], tag: 'USA · 2001', desc: 'NASA\'s main science laboratory, packed with experiment racks for research in microgravity.' },
-    { name: 'Harmony', box: [40, 135, 80, 30], tag: 'USA · 2007', desc: 'A hub that joins the European and Japanese labs and holds crew sleeping quarters.' },
-    { name: 'Columbus', box: [50, 70, 60, 65], tag: 'Europe · 2008', desc: 'ESA\'s laboratory for physics, materials science and life-science experiments.' },
-    { name: 'Kibo', box: [45, 165, 70, 85], tag: 'Japan · 2008', desc: 'The largest single module, with its own robotic arm and an exposed porch for experiments outside.' },
-    { name: 'Tranquility', label: 'Tranq.', box: [207, 165, 41, 60], tag: 'USA · 2010', desc: 'Home to the exercise equipment, the toilet and much of the life-support hardware.' },
-    { name: 'Cupola', labelBelow: true, box: [212, 225, 31, 28], tag: 'Europe · 2010', desc: 'A seven-window observation dome — the best seat in the house for watching Earth roll by.' },
-    { name: 'Nauka', box: [345, 170, 60, 60], tag: 'Russia · 2021', desc: 'A multipurpose lab that added research space, a European robotic arm and more living room.' }
+    { name: 'Zarya', box: [250, 130, 80, 40], tag: 'Russia · 1998',
+      desc: 'The very first piece. It supplied early power, storage and propulsion, and is now mostly used as a big cupboard.',
+      facts: [['Launched', '20 Nov 1998'], ['Carried by', 'Proton rocket'], ['Length', '12.6 m']],
+      more: 'Its name means "sunrise" in Russian, marking the dawn of the project. It was built in Moscow but paid for by the United States, and it flew alone for two weeks before Unity arrived to join it.' },
+    { name: 'Unity', box: [205, 135, 45, 30], tag: 'USA · 1998',
+      desc: 'A connecting node with six docking ports, linking the American and Russian sides of the station.',
+      facts: [['Launched', '4 Dec 1998'], ['Carried by', 'Shuttle Endeavour'], ['Length', '5.5 m']],
+      more: 'Astronauts joined Unity to Zarya by hand during three spacewalks, the first assembly job of the station. Small as it is, it holds more than 50,000 mechanical parts and over 200 pipes carrying air, water and coolant.' },
+    { name: 'Zvezda', box: [330, 130, 90, 40], tag: 'Russia · 2000',
+      desc: 'The early heart of the station: living quarters, life support and the engines used to boost the orbit.',
+      facts: [['Launched', '12 Jul 2000'], ['Carried by', 'Proton rocket'], ['Length', '13.1 m']],
+      more: 'Its name means "star". The design comes from the core of the Mir space station, and its arrival made it possible for the first crew to move in a few months later. It has two sleeping cabins, a galley and a toilet.' },
+    { name: 'Destiny', box: [120, 132, 85, 36], tag: 'USA · 2001',
+      desc: 'NASA\'s main science laboratory, packed with experiment racks for research in microgravity.',
+      facts: [['Launched', '7 Feb 2001'], ['Carried by', 'Shuttle Atlantis'], ['Length', '8.5 m']],
+      more: 'It has a 51 cm window of optical-quality glass in the floor, used for photographing Earth. The station\'s main truss, which carries the solar arrays, is bolted to its roof.' },
+    { name: 'Harmony', box: [40, 135, 80, 30], tag: 'USA · 2007',
+      desc: 'A hub that joins the European and Japanese labs and holds crew sleeping quarters.',
+      facts: [['Launched', '23 Oct 2007'], ['Carried by', 'Shuttle Discovery'], ['Length', '7.2 m']],
+      more: 'Built in Italy and named by American schoolchildren in a competition. Four crew members sleep here in cabins the size of a phone booth, and visiting crew and cargo spacecraft dock at its front and top ports.' },
+    { name: 'Columbus', box: [50, 70, 60, 65], tag: 'Europe · 2008',
+      desc: 'ESA\'s laboratory for physics, materials science and life-science experiments.',
+      facts: [['Launched', '7 Feb 2008'], ['Carried by', 'Shuttle Atlantis'], ['Length', '6.9 m']],
+      more: 'Europe\'s largest single contribution to the station. It holds ten racks of experiments and is run from a control centre near Munich in Germany, with more experiments mounted outside in open space.' },
+    { name: 'Kibo', box: [45, 165, 70, 85], tag: 'Japan · 2008',
+      desc: 'The largest single module, with its own robotic arm and an exposed porch for experiments outside.',
+      facts: [['Launched', '31 May 2008'], ['Carried by', 'Shuttle Discovery'], ['Length', '11.2 m']],
+      more: 'Its name means "hope". It was too big for one flight and went up in three. A small airlock lets the crew pass experiments outside without a spacewalk, and it is also used to release tiny satellites into orbit.' },
+    { name: 'Tranquility', label: 'Tranq.', box: [207, 165, 41, 60], tag: 'USA · 2010',
+      desc: 'Home to the exercise equipment, the toilet and much of the life-support hardware.',
+      facts: [['Launched', '8 Feb 2010'], ['Carried by', 'Shuttle Endeavour'], ['Length', '6.7 m']],
+      more: 'Named after the Sea of Tranquility, where Apollo 11 landed on the Moon. Its machines recycle the crew\'s breath, sweat and urine back into clean air and drinking water. Crew members exercise here for about two hours a day.' },
+    { name: 'Cupola', labelBelow: true, box: [212, 225, 31, 28], tag: 'Europe · 2010',
+      desc: 'A seven-window observation dome - the best seat in the house for watching Earth roll by.',
+      facts: [['Launched', '8 Feb 2010'], ['Carried by', 'Shuttle Endeavour'], ['Width', '3 m']],
+      more: 'Its round centre window is 80 cm across, the largest ever flown in space when it launched. The crew use it to steer the robotic arm when catching cargo ships, and shutters close over the glass to protect it from tiny meteoroids.' },
+    { name: 'Nauka', box: [345, 170, 60, 60], tag: 'Russia · 2021',
+      desc: 'A multipurpose lab that added research space, a European robotic arm and more living room.',
+      facts: [['Launched', '21 Jul 2021'], ['Carried by', 'Proton rocket'], ['Length', '13 m']],
+      more: 'Its name means "science". It reached orbit about 14 years later than first planned. A few hours after docking, its thrusters fired by mistake and slowly spun the whole station around one and a half times before control was regained.' }
 ];
 
 (function buildModuleExplorer() {
@@ -116,7 +146,12 @@ const MODULES = [
         info.innerHTML = `
             <div class="eyebrow">${module.tag}</div>
             <div class="module-name">${module.name}</div>
-            <p>${module.desc}</p>`;
+            <p>${module.desc}</p>
+            <div class="module-facts">
+                ${module.facts.map(([label, value]) => `<div><span class="eyebrow">${label}</span><b>${value}</b></div>`).join('')}
+            </div>
+            <div class="eyebrow">Good to know</div>
+            <p>${module.more}</p>`;
     }
 
     MODULES.forEach((module, i) => {
@@ -177,11 +212,11 @@ setInterval(updateDeorbitCountdown, 30000);
 
 // --- FAQ ---
 const FAQ = [
-    { q: 'Can I see the ISS without a telescope?', a: 'Yes. It is one of the brightest objects in the night sky — a steady white light gliding across the sky in a few minutes. It doesn\'t blink and makes no sound.' },
+    { q: 'Can I see the ISS without a telescope?', a: 'Yes. It is one of the brightest objects in the night sky - a steady white light gliding across the sky in a few minutes. It doesn\'t blink and makes no sound.' },
     { q: 'Why can\'t I see it every night?', a: 'It has to pass over you while your sky is dark and the station is still lit by the Sun. That happens shortly after sunset or before sunrise. Daylight and shadow passes are listed under All passes but can\'t be seen.' },
     { q: 'How often does it go around Earth?', a: 'About once every 93 minutes, which is 15 to 16 times a day. The crew see a sunrise and sunset on almost every orbit.' },
     { q: 'Why does the track look like a wave?', a: 'The orbit is a circle tilted 51.6° to the equator. On a flat map it becomes a wave, and because Earth turns underneath, each orbit crosses the ground a little further west.' },
-    { q: 'How accurate are the positions?', a: 'Positions are calculated in your browser from published orbital elements refreshed several times a day — normally within a few kilometres, and pass times within seconds. Accuracy dips briefly after the station fires its engines.' }
+    { q: 'How accurate are the positions?', a: 'Positions are calculated in your browser from published orbital elements refreshed several times a day - normally within a few kilometres, and pass times within seconds. Accuracy dips briefly after the station fires its engines.' }
 ];
 
 (function buildFaq() {
@@ -207,7 +242,7 @@ const FAQ = [
         items.forEach(({ item, button, icon }, i) => {
             item.classList.toggle('open', i === index);
             button.setAttribute('aria-expanded', i === index);
-            icon.textContent = i === index ? '–' : '+';
+            icon.textContent = i === index ? '-' : '+';
         });
     }
     open(0);

@@ -109,7 +109,7 @@ const Passes = (() => {
         $('filter-all').classList.toggle('active', !visibleOnly);
 
         if (!Observer.get()) {
-            rows.innerHTML = '<tr><td colspan="7" class="pass-empty">🔭 No location yet — tell us where you are and the passes land here.</td></tr>';
+            rows.innerHTML = '<tr><td colspan="7" class="pass-empty">🔭 No location yet - tell us where you are and the passes land here.</td></tr>';
             return;
         }
         if (!shown.length) {
@@ -178,7 +178,7 @@ const Passes = (() => {
             $('next-pass-detail').textContent =
                 `${day(next.start)} at ${time(next.start)} · ${compass(next.startAz)} → ${compass(next.endAz)} · up to ${Math.round(next.maxEl)}° high · ${Math.round((next.end - next.start) / 60000)} min`;
         } else {
-            $('next-pass-time').textContent = '—';
+            $('next-pass-time').textContent = '-';
             $('next-pass-detail').textContent = `No visible passes in the next ${DAYS} days from ${observer.name}.`;
         }
 
